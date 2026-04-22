@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Swiggy — Web Analytics Report 2024–25</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --orange: #FC8019;
+  --orange-dim: #b85c10;
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --border: rgba(255,255,255,0.08);
+  --text: #f0ebe3;
+  --muted: #888880;
+  --green: #34d399;
+  --red: #f87171;
+  --blue: #60a5fa;
+  --amber: #fbbf24;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+::selection { background: var(--orange); color: #000; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2.5rem;
+  height: 60px;
+  background: rgba(13,13,13,0.85);
+  backdrop-filter: blur(14px);
+  border-bottom: 0.5px solid var(--border);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-logo svg { width: 18px; height: 18px; fill: #fff; }
+.nav-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); }
+.nav-links { display: flex; gap: 1.8rem; list-style: none; }
+.nav-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .2s; }
+.nav-links a:hover { color: var(--orange); }
+.nav-tag {
+  font-size: 11px; background: rgba(252,128,25,0.15);
+  color: var(--orange); border: 0.5px solid rgba(252,128,25,0.3);
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0 2.5rem 5rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(252,128,25,0.12) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 40% at 10% 80%, rgba(252,128,25,0.06) 0%, transparent 60%);
+}
+.hero-grid {
+  position: absolute; inset: 0; z-index: 0; opacity: 0.07;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.hero-eyebrow {
+  font-size: 12px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 1.2rem; position: relative; z-index: 1;
+  opacity: 0; animation: fadeUp .6s .2s forwards;
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(3rem, 8vw, 7rem);
+  line-height: .95; letter-spacing: -.03em;
+  color: var(--text);
+  position: relative; z-index: 1;
+  opacity: 0; animation: fadeUp .7s .35s forwards;
+}
+.hero h1 em { color: var(--orange); font-style: normal; }
+.hero-sub {
+  margin-top: 1.5rem; max-width: 520px;
+  font-size: 17px; color: var(--muted); line-height: 1.7;
+  position: relative; z-index: 1;
+  opacity: 0; animation: fadeUp .7s .5s forwards;
+}
+.hero-stats {
+  display: flex; gap: 2.5rem; margin-top: 3rem;
+  position: relative; z-index: 1;
+  opacity: 0; animation: fadeUp .7s .65s forwards;
+  flex-wrap: wrap;
+}
+.hstat .num {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.2rem;
+  color: var(--text); line-height: 1;
+}
+.hstat .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.hero-divider {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, var(--orange), transparent);
+}
+.scroll-hint {
+  position: absolute; bottom: 2rem; right: 2.5rem; z-index: 1;
+  font-size: 11px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+  opacity: 0; animation: fadeUp .5s 1s forwards;
+}
+.scroll-hint::before {
+  content: ''; display: block; width: 1px; height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--orange));
+}
+
+/* ── SECTIONS ── */
+section { padding: 6rem 2.5rem; max-width: 1100px; margin: 0 auto; }
+.sec-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .15em;
+  color: var(--orange); margin-bottom: 1rem;
+}
+.sec-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3rem); line-height: 1.05; letter-spacing: -.02em;
+  margin-bottom: 1.5rem;
+}
+.sec-body { color: var(--muted); max-width: 640px; font-size: 16px; }
+
+/* ── KPI STRIP ── */
+.kpi-strip {
+  background: var(--surface); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border);
+  padding: 0; width: 100%;
+}
+.kpi-strip-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  divide: block;
+}
+.kpi-item {
+  padding: 2rem 1.5rem;
+  border-right: 0.5px solid var(--border);
+}
+.kpi-item:last-child { border-right: none; }
+.kpi-item .k-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+.kpi-item .k-val {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.9rem;
+  line-height: 1; color: var(--text);
+}
+.kpi-item .k-delta { font-size: 12px; margin-top: 6px; font-weight: 500; }
+.up { color: var(--green); } .dn { color: var(--red); }
+
+/* ── CHARTS GRID ── */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.chart-box {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 14px; padding: 1.5rem;
+}
+.chart-box.full { grid-column: 1 / -1; }
+.chart-box h3 {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
+  color: var(--text); margin-bottom: 4px;
+}
+.chart-box .ch-sub { font-size: 12px; color: var(--muted); margin-bottom: 1rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+.legend span { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── AUDIENCE ── */
+.aud-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.aud-card {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 14px; padding: 1.4rem 1.5rem;
+}
+.aud-card .a-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
+.aud-card .a-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.4rem; color: var(--text); }
+.aud-card .a-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.bar-track { background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px; margin-top: 10px; }
+.bar-fill { height: 5px; border-radius: 4px; background: var(--orange); transition: width 1.5s ease; }
+
+/* ── COMPETITIVE ── */
+.comp-list { display: flex; flex-direction: column; gap: .7rem; }
+.comp-row {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 10px; padding: .9rem 1.2rem;
+}
+.comp-name { font-size: 14px; font-weight: 600; min-width: 120px; color: var(--text); }
+.comp-track { flex: 1; background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; }
+.comp-fill { height: 6px; border-radius: 4px; }
+.comp-score { font-size: 13px; font-weight: 600; min-width: 42px; text-align: right; color: var(--text); }
+
+/* ── RECO ── */
+.reco-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.2rem; }
+.reco-card {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 14px; padding: 1.5rem;
+  position: relative; overflow: hidden;
+}
+.reco-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--orange);
+}
+.reco-card .r-num {
+  font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800;
+  color: rgba(252,128,25,0.15); position: absolute; top: 1rem; right: 1.2rem;
+  line-height: 1;
+}
+.reco-card h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.reco-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.reco-card .r-tag {
+  display: inline-block; margin-top: 12px; font-size: 10px;
+  text-transform: uppercase; letter-spacing: .1em;
+  padding: 3px 10px; border-radius: 20px;
+  background: rgba(252,128,25,0.12); color: var(--orange);
+}
+
+/* ── FINANCIAL ── */
+.fin-table {
+  width: 100%; border-collapse: collapse; font-size: 14px;
+}
+.fin-table th {
+  text-align: left; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--muted);
+  padding: .8rem 1rem; border-bottom: 0.5px solid var(--border);
+}
+.fin-table td {
+  padding: .8rem 1rem; border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  color: var(--text); font-size: 13px;
+}
+.fin-table tr:hover td { background: var(--surface2); }
+.fin-table .pos { color: var(--green); }
+.fin-table .neg { color: var(--red); }
+.fin-table .highlight td { color: var(--orange); font-weight: 600; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 0.5px solid var(--border);
+  padding: 3rem 2.5rem;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-brand {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; color: var(--text);
+}
+.footer-note { font-size: 12px; color: var(--muted); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 0 1.2rem; }
+  .nav-links { display: none; }
+  .hero { padding: 0 1.2rem 4rem; }
+  section { padding: 4rem 1.2rem; }
+  .kpi-strip-inner { grid-template-columns: repeat(3, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .aud-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-item { padding: 1.2rem 1rem; }
+  footer { padding: 2rem 1.2rem; flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .kpi-strip-inner { grid-template-columns: repeat(2, 1fr); }
+  .aud-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 2.8rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
+    </div>
+    <span class="nav-title">Swiggy Analytics</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#traffic">Traffic</a></li>
+    <li><a href="#audience">Audience</a></li>
+    <li><a href="#financials">Financials</a></li>
+    <li><a href="#competitive">Competitive</a></li>
+    <li><a href="#recommendations">Recommendations</a></li>
+  </ul>
+  <span class="nav-tag">FY 2024–25</span>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-eyebrow">Web Analytics Project · Swiggy Ltd.</div>
+  <h1>Decoding<br/><em>Swiggy's</em><br/>Digital Edge</h1>
+  <p class="hero-sub">A full-spectrum analysis of Swiggy's web traffic, revenue trajectory, audience behaviour, and competitive standing — powered by FY 2024–25 data.</p>
+  <div class="hero-stats">
+    <div class="hstat"><div class="num" data-count="16" data-suffix="M">0</div><div class="lbl">Monthly Visits</div></div>
+    <div class="hstat"><div class="num" data-count="4.2" data-suffix="B GOV" data-decimal="1">0</div><div class="lbl">Gross Order Value</div></div>
+    <div class="hstat"><div class="num" data-count="1524" data-prefix="#">0</div><div class="lbl">Global Rank</div></div>
+    <div class="hstat"><div class="num" data-count="36" data-suffix="% YoY">0</div><div class="lbl">Revenue Growth</div></div>
+  </div>
+  <div class="hero-divider"></div>
+  <div class="scroll-hint">scroll down</div>
+</div>
+
+<!-- KPI STRIP -->
+<div class="kpi-strip" id="overview">
+  <div class="kpi-strip-inner">
+    <div class="kpi-item">
+      <div class="k-label">Monthly Visits</div>
+      <div class="k-val">16.03M</div>
+      <div class="k-delta dn">▼ 2.14% vs Jan</div>
+    </div>
+    <div class="kpi-item">
+      <div class="k-label">Avg Session</div>
+      <div class="k-val">8:16</div>
+      <div class="k-delta up">▲ High retention</div>
+    </div>
+    <div class="kpi-item">
+      <div class="k-label">Global Rank</div>
+      <div class="k-val">#1,524</div>
+      <div class="k-delta up">▲ from #1,679</div>
+    </div>
+    <div class="kpi-item">
+      <div class="k-label">Revenue TTM</div>
+      <div class="k-val">$1.96B</div>
+      <div class="k-delta up">▲ +36% YoY</div>
+    </div>
+    <div class="kpi-item">
+      <div class="k-label">Transact. Users</div>
+      <div class="k-val">14.3M</div>
+      <div class="k-delta up">▲ 4.5× / month</div>
+    </div>
+    <div class="kpi-item">
+      <div class="k-label">Backlinks</div>
+      <div class="k-val">1.13M</div>
+      <div class="k-delta">16.85K domains</div>
+    </div>
+  </div>
+</div>
+
+<!-- TRAFFIC SECTION -->
+<section id="traffic">
+  <div class="reveal">
+    <div class="sec-label">Traffic Analysis</div>
+    <h2 class="sec-title">Where Swiggy's<br/>visitors come from</h2>
+    <p class="sec-body">Direct traffic commands over half of all desktop visits, a sign of strong brand recall. Organic search brings in nearly 28%, while social and email channels remain heavily underutilised — a key growth opportunity.</p>
+  </div>
+  <div class="charts-grid" style="margin-top: 3rem;">
+    <div class="chart-box reveal">
+      <h3>Traffic Sources</h3>
+      <div class="ch-sub">Desktop — Feb 2026</div>
+      <div class="legend">
+        <span><span class="dot" style="background:#FC8019;"></span>Direct 56.9%</span>
+        <span><span class="dot" style="background:#fbbf24;"></span>Organic 28.2%</span>
+        <span><span class="dot" style="background:#60a5fa;"></span>Referral 9.1%</span>
+        <span><span class="dot" style="background:#a78bfa;"></span>Social 3.8%</span>
+        <span><span class="dot" style="background:#34d399;"></span>Other 2%</span>
+      </div>
+      <div style="position:relative;height:240px;"><canvas id="cTraffic"></canvas></div>
+    </div>
+    <div class="chart-box reveal">
+      <h3>Monthly Visits Trend</h3>
+      <div class="ch-sub">Global visits (millions) — last 6 months</div>
+      <div style="position:relative;height:270px;"><canvas id="cVisits"></canvas></div>
+    </div>
+    <div class="chart-box full reveal">
+      <h3>Revenue Growth Trajectory</h3>
+      <div class="ch-sub">Annual revenue vs net loss — FY20 to FY25E (₹ Millions)</div>
+      <div class="legend">
+        <span><span class="dot" style="background:#FC8019;"></span>Revenue</span>
+        <span><span class="dot" style="background:#f87171;"></span>Net Loss (absolute)</span>
+      </div>
+      <div style="position:relative;height:280px;"><canvas id="cRevenue"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- AUDIENCE -->
+<section id="audience" style="background:none;">
+  <div class="reveal">
+    <div class="sec-label">Audience Intelligence</div>
+    <h2 class="sec-title">Who orders<br/>on Swiggy?</h2>
+    <p class="sec-body">Urban millennials aged 25–34 are the backbone of Swiggy's user base. The platform skews significantly male (66%), and high repeat frequency (4.5× / month) confirms deep habitual usage among transacting users.</p>
+  </div>
+  <div class="aud-grid" style="margin-top: 2.5rem;">
+    <div class="aud-card reveal">
+      <div class="a-label">Gender Split</div>
+      <div class="a-val">66% Male</div>
+      <div class="a-sub">34% female — growing cohort</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%" data-w="66%"></div></div>
+    </div>
+    <div class="aud-card reveal">
+      <div class="a-label">Top Age Group</div>
+      <div class="a-val">25–34 yrs</div>
+      <div class="a-sub">Millennial professionals dominate</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:#fbbf24;" data-w="78%"></div></div>
+    </div>
+    <div class="aud-card reveal">
+      <div class="a-label">Order Frequency</div>
+      <div class="a-val">4.5× / month</div>
+      <div class="a-sub">High repeat purchase rate</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:#34d399;" data-w="72%"></div></div>
+    </div>
+    <div class="aud-card reveal">
+      <div class="a-label">Avg Order Value</div>
+      <div class="a-val">₹428</div>
+      <div class="a-sub">Food delivery AOV — FY24</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:#60a5fa;" data-w="55%"></div></div>
+    </div>
+    <div class="aud-card reveal">
+      <div class="a-label">Social Leader</div>
+      <div class="a-val">LinkedIn #1</div>
+      <div class="a-sub">YouTube #2 · Twitter #3</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:#a78bfa;" data-w="60%"></div></div>
+    </div>
+    <div class="aud-card reveal">
+      <div class="a-label">Core Geography</div>
+      <div class="a-val">India 94%</div>
+      <div class="a-sub">Also S. Korea & USA</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:#f87171;" data-w="94%"></div></div>
+    </div>
+  </div>
+  <div class="charts-grid" style="margin-top:1.5rem;">
+    <div class="chart-box reveal">
+      <h3>Age Distribution</h3>
+      <div class="ch-sub">Visitor age cohorts (%)</div>
+      <div style="position:relative;height:220px;"><canvas id="cAge"></canvas></div>
+    </div>
+    <div class="chart-box reveal">
+      <h3>GOV by Business Vertical</h3>
+      <div class="ch-sub">Gross Order Value — FY24 ($B)</div>
+      <div style="position:relative;height:220px;"><canvas id="cGov"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINANCIALS -->
+<section id="financials">
+  <div class="reveal">
+    <div class="sec-label">Financial Performance</div>
+    <h2 class="sec-title">Numbers behind<br/>the platform</h2>
+    <p class="sec-body">Swiggy's revenue has grown at a 5-year CAGR of 32.9%, with losses narrowing sharply in FY24. The IPO in November 2024 at an 18% IRR for Prosus validated the path to profitability.</p>
+  </div>
+  <div class="charts-grid" style="margin-top:2.5rem;">
+    <div class="chart-box reveal">
+      <h3>Cash Flow Analysis</h3>
+      <div class="ch-sub">CFO / CFI / CFF — FY23 vs FY24 (₹M)</div>
+      <div class="legend">
+        <span><span class="dot" style="background:#FC8019;"></span>CFO</span>
+        <span><span class="dot" style="background:#34d399;"></span>CFI</span>
+        <span><span class="dot" style="background:#60a5fa;"></span>CFF</span>
+      </div>
+      <div style="position:relative;height:220px;"><canvas id="cCash"></canvas></div>
+    </div>
+    <div class="chart-box reveal">
+      <h3>EBITDA Loss Improvement</h3>
+      <div class="ch-sub">Adjusted EBITDA loss in $M</div>
+      <div style="position:relative;height:220px;"><canvas id="cEbitda"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-box reveal" style="margin-top: 1.5rem;">
+    <h3>5-Year Financial Summary</h3>
+    <div class="ch-sub">Key metrics FY20–FY24</div>
+    <div style="overflow-x:auto; margin-top:1rem;">
+    <table class="fin-table">
+      <thead>
+        <tr>
+          <th>Metric</th><th>FY20</th><th>FY21</th><th>FY22</th><th>FY23</th><th>FY24</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight">
+          <td>Revenue (₹M)</td><td>37,277</td><td>20,690</td><td>57,253</td><td>87,145</td><td>1,16,343</td>
+        </tr>
+        <tr>
+          <td>YoY Growth</td><td>—</td><td class="neg">-44.5%</td><td class="pos">+176.7%</td><td class="pos">+52.2%</td><td class="pos">+33.5%</td>
+        </tr>
+        <tr>
+          <td>Net Loss (₹M)</td><td class="neg">-25,800</td><td class="neg">-18,900</td><td class="neg">-36,250</td><td class="neg">-41,793</td><td class="neg">-23,502</td>
+        </tr>
+        <tr>
+          <td>Loss Improvement</td><td>—</td><td class="pos">+26.7%</td><td class="neg">-91.8%</td><td class="neg">-15.3%</td><td class="pos">+43.8%</td>
+        </tr>
+        <tr>
+          <td>GOV ($B)</td><td>—</td><td>—</td><td>—</td><td>3.3</td><td>4.2</td>
+        </tr>
+        <tr>
+          <td>Transacting Users</td><td>—</td><td>—</td><td>—</td><td>~12M</td><td>14.3M</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- COMPETITIVE -->
+<section id="competitive">
+  <div class="reveal">
+    <div class="sec-label">Competitive Landscape</div>
+    <h2 class="sec-title">Swiggy vs<br/>the market</h2>
+    <p class="sec-body">Zomato leads as the highest-similarity competitor. Swiggy's strongest moat is the unified app covering food, grocery (Instamart), and dining out — a breadth that Blinkit, Zepto, and Magicpin individually lack.</p>
+  </div>
+  <div style="margin-top: 2.5rem;" class="reveal">
+    <div class="comp-list">
+      <div class="comp-row">
+        <span class="comp-name">Zomato</span>
+        <div class="comp-track"><div class="comp-fill" style="width:0%;background:#f87171;" data-w="85%"></div></div>
+        <span class="comp-score">85%</span>
+      </div>
+      <div class="comp-row">
+        <span class="comp-name">Magicpin</span>
+        <div class="comp-track"><div class="comp-fill" style="width:0%;background:#FC8019;" data-w="72%"></div></div>
+        <span class="comp-score">72%</span>
+      </div>
+      <div class="comp-row">
+        <span class="comp-name">Blinkit</span>
+        <div class="comp-track"><div class="comp-fill" style="width:0%;background:#fbbf24;" data-w="69%"></div></div>
+        <span class="comp-score">69%</span>
+      </div>
+      <div class="comp-row">
+        <span class="comp-name">Zepto</span>
+        <div class="comp-track"><div class="comp-fill" style="width:0%;background:#60a5fa;" data-w="62%"></div></div>
+        <span class="comp-score">62%</span>
+      </div>
+      <div class="comp-row">
+        <span class="comp-name">BigBasket</span>
+        <div class="comp-track"><div class="comp-fill" style="width:0%;background:#34d399;" data-w="55%"></div></div>
+        <span class="comp-score">55%</span>
+      </div>
+      <div class="comp-row">
+        <span class="comp-name">EazyDiner</span>
+        <div class="comp-track"><div class="comp-fill" style="width:0%;background:#a78bfa;" data-w="41%"></div></div>
+        <span class="comp-score">41%</span>
+      </div>
+    </div>
+  </div>
+  <div class="chart-box full reveal" style="margin-top:1.5rem;">
+    <h3>Competitor Monthly Traffic Estimates</h3>
+    <div class="ch-sub">Estimated visits in millions — Feb 2026</div>
+    <div style="position:relative;height:240px;"><canvas id="cComp"></canvas></div>
+  </div>
+</section>
+
+<!-- RECOMMENDATIONS -->
+<section id="recommendations">
+  <div class="reveal">
+    <div class="sec-label">Strategic Recommendations</div>
+    <h2 class="sec-title">7 plays to<br/>grow faster</h2>
+    <p class="sec-body">Based on traffic gaps, audience demographics, financial data, and competitive benchmarks — here are the highest-leverage digital moves for Swiggy.</p>
+  </div>
+  <div class="reco-grid" style="margin-top:2.5rem;">
+    <div class="reco-card reveal">
+      <div class="r-num">01</div>
+      <h4>Activate the Email Channel</h4>
+      <p>Email is the most underutilised source. Targeting 14.3M transacting users with personalised re-order nudges could drive 5–8% revenue uplift with minimal spend.</p>
+      <span class="r-tag">Retention</span>
+    </div>
+    <div class="reco-card reveal">
+      <div class="r-num">02</div>
+      <h4>Diversify Traffic Sources</h4>
+      <p>56.9% direct traffic means brand strength, but fragility. Invest in Google Display, YouTube Pre-roll, and affiliate channels to de-risk acquisition concentration.</p>
+      <span class="r-tag">Acquisition</span>
+    </div>
+    <div class="reco-card reveal">
+      <div class="r-num">03</div>
+      <h4>Instagram-First Social Strategy</h4>
+      <p>Social mix is LinkedIn-heavy. Instagram's Gen-Z + Millennial audience better matches Swiggy's 18–34 growth cohort — a channel that drives intent, not just awareness.</p>
+      <span class="r-tag">Social</span>
+    </div>
+    <div class="reco-card reveal">
+      <div class="r-num">04</div>
+      <h4>Instamart Checkout Optimisation</h4>
+      <p>Instamart delivers $1B GOV vs Food's $3B. A/B test bundle offers and upsell nudges on the web checkout funnel to close the gap on average order value.</p>
+      <span class="r-tag">Conversion</span>
+    </div>
+    <div class="reco-card reveal">
+      <div class="r-num">05</div>
+      <h4>Dineout SEO Push</h4>
+      <p>The dining vertical contributes only $0.3B GOV. Restaurant-search keywords cost as little as $0.15 CPC — low-hanging organic traffic with strong commercial intent.</p>
+      <span class="r-tag">SEO</span>
+    </div>
+    <div class="reco-card reveal">
+      <div class="r-num">06</div>
+      <h4>Fix Instamart Exit Funnel</h4>
+      <p>28% of post-visit traffic goes to google.com, signalling unmet search intent on grocery queries. Improve landing page relevance and internal search quality.</p>
+      <span class="r-tag">UX</span>
+    </div>
+    <div class="reco-card reveal">
+      <div class="r-num">07</div>
+      <h4>Profitability-Linked GA4 Events</h4>
+      <p>Instrument GA4 custom events for reorder, subscription signup, and cross-vertical purchase to directly tie web analytics metrics to the path to EBITDA breakeven.</p>
+      <span class="r-tag">Analytics</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">Swiggy Web Analytics Project</div>
+    <div class="footer-note" style="margin-top:4px;">Data sourced from Swiggy Annual Report FY24, Similarweb, Semrush, Equitymaster · FY 2024–25</div>
+  </div>
+  <div class="footer-note">Built for academic & analytical purposes only</div>
+</footer>
+
+<script>
+// ── COUNTER ANIMATION ──
+function animateCounter(el) {
+  const target = parseFloat(el.dataset.count);
+  const prefix = el.dataset.prefix || '';
+  const suffix = el.dataset.suffix || '';
+  const decimal = el.dataset.decimal ? parseInt(el.dataset.decimal) : 0;
+  const duration = 1600;
+  const start = performance.now();
+  function step(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const val = target * ease;
+    el.textContent = prefix + (decimal ? val.toFixed(decimal) : Math.round(val)) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = prefix + (decimal ? target.toFixed(decimal) : target) + suffix;
+  }
+  requestAnimationFrame(step);
+}
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // animate bars
+      e.target.querySelectorAll('[data-w]').forEach(b => {
+        setTimeout(() => b.style.width = b.dataset.w, 100);
+      });
+      e.target.querySelectorAll('.comp-fill[data-w]').forEach(b => {
+        setTimeout(() => b.style.width = b.dataset.w, 100);
+      });
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── HERO COUNTERS ──
+const heroObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('[data-count]').forEach(animateCounter);
+      heroObs.disconnect();
+    }
+  });
+}, { threshold: 0.5 });
+const heroEl = document.querySelector('.hero-stats');
+if (heroEl) heroObs.observe(heroEl);
+
+// ── CHARTS ──
+const gridColor = 'rgba(255,255,255,0.06)';
+const tickColor = '#666';
+const tickFont = { size: 11, family: 'Instrument Sans, sans-serif' };
+
+// Traffic Doughnut
+new Chart(document.getElementById('cTraffic'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Direct','Organic','Referral','Social','Other'],
+    datasets: [{ data: [56.9,28.2,9.1,3.8,2.0],
+      backgroundColor: ['#FC8019','#fbbf24','#60a5fa','#a78bfa','#34d399'],
+      borderWidth: 0, hoverOffset: 6 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '68%',
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.raw + '%' }
+    }}
+  }
+});
+
+// Visits Trend
+new Chart(document.getElementById('cVisits'), {
+  type: 'line',
+  data: {
+    labels: ['Sep','Oct','Nov','Dec','Jan','Feb'],
+    datasets: [{
+      data: [14.2, 15.8, 17.1, 18.2, 16.38, 16.03],
+      borderColor: '#FC8019', backgroundColor: 'rgba(252,128,25,0.1)',
+      fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#FC8019', borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { callback: v => v + 'M', color: tickColor, font: tickFont }, grid: { color: gridColor } },
+      x: { ticks: { color: tickColor, font: tickFont }, grid: { display: false } }
+    }
+  }
+});
+
+// Revenue Bar
+new Chart(document.getElementById('cRevenue'), {
+  type: 'bar',
+  data: {
+    labels: ['FY20','FY21','FY22','FY23','FY24','FY25e'],
+    datasets: [
+      { label: 'Revenue', data: [37277,20690,57253,87145,116343,145000], backgroundColor: '#FC8019', borderRadius: 4, yAxisID: 'y' },
+      { label: 'Net Loss', data: [25800,18900,36250,41793,23502,15000], backgroundColor: 'rgba(248,113,113,0.6)', borderRadius: 4, yAxisID: 'y' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { callback: v => '₹' + (v/1000).toFixed(0) + 'K', color: tickColor, font: tickFont }, grid: { color: gridColor } },
+      x: { ticks: { color: tickColor, font: tickFont }, grid: { display: false } }
+    }
+  }
+});
+
+// Age horizontal bar
+new Chart(document.getElementById('cAge'), {
+  type: 'bar',
+  data: {
+    labels: ['18–24','25–34','35–44','45–54','55+'],
+    datasets: [{ data: [18,38,26,12,6],
+      backgroundColor: ['#fbbf24','#FC8019','#fbbf24','#60a5fa','#60a5fa'],
+      borderRadius: 4 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { callback: v => v + '%', color: tickColor, font: tickFont }, grid: { color: gridColor } },
+      y: { ticks: { color: tickColor, font: tickFont }, grid: { display: false } }
+    }
+  }
+});
+
+// GOV Doughnut
+new Chart(document.getElementById('cGov'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Food Delivery','Instamart','Dineout'],
+    datasets: [{ data: [3.0,1.0,0.3],
+      backgroundColor: ['#FC8019','#fbbf24','#34d399'],
+      borderWidth: 0 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: { legend: {
+      display: true, position: 'right',
+      labels: { color: '#888', font: { size: 12 }, boxWidth: 10, padding: 14 }
+    }}
+  }
+});
+
+// Cash Flow
+new Chart(document.getElementById('cCash'), {
+  type: 'bar',
+  data: {
+    labels: ['FY23','FY24'],
+    datasets: [
+      { label: 'CFO', data: [-40599,-13127], backgroundColor: '#FC8019', borderRadius: 4 },
+      { label: 'CFI', data: [39678,14585], backgroundColor: '#34d399', borderRadius: 4 },
+      { label: 'CFF', data: [-1715,-1228], backgroundColor: '#60a5fa', borderRadius: 4 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { callback: v => (v<0?'-₹':' ₹')+Math.abs(v/1000).toFixed(0)+'K', color: tickColor, font: tickFont }, grid: { color: gridColor } },
+      x: { ticks: { color: tickColor, font: tickFont }, grid: { display: false } }
+    }
+  }
+});
+
+// EBITDA
+new Chart(document.getElementById('cEbitda'), {
+  type: 'bar',
+  data: {
+    labels: ['H1 FY23','H1 FY24'],
+    datasets: [{
+      data: [145,85],
+      backgroundColor: ['rgba(248,113,113,0.5)','rgba(252,128,25,0.7)'],
+      borderRadius: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { callback: v => '-$' + v + 'M', color: tickColor, font: tickFont }, grid: { color: gridColor } },
+      x: { ticks: { color: tickColor, font: tickFont }, grid: { display: false } }
+    }
+  }
+});
+
+// Competitor
+new Chart(document.getElementById('cComp'), {
+  type: 'bar',
+  data: {
+    labels: ['Zomato','Swiggy','Blinkit','Zepto','BigBasket','Magicpin'],
+    datasets: [{
+      data: [155, 16, 11, 9, 7, 2.2],
+      backgroundColor: ['#f87171','#FC8019','#fbbf24','#60a5fa','#34d399','#a78bfa'],
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { callback: v => v + 'M', color: tickColor, font: tickFont }, grid: { color: gridColor } },
+      x: { ticks: { color: tickColor, font: tickFont }, grid: { display: false } }
+    }
+  }
+});
+
+// Animate comp-fill bars when visible
+const compObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.comp-fill[data-w]').forEach(b => {
+        setTimeout(() => { b.style.transition = 'width 1.2s ease'; b.style.width = b.dataset.w; }, 100);
+      });
+    }
+  });
+}, { threshold: 0.2 });
+document.querySelectorAll('.comp-list').forEach(el => compObs.observe(el));
+</script>
+</body>
+</html>
